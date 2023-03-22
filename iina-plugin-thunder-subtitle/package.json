@@ -3,7 +3,7 @@
   "scripts": {
     "typecheck": "tsc",
     "dev": "ts-node ./build.ts -w",
-    "build": "pnpm typecheck && ts-node ./build.ts"
+    "build": "pnpm typecheck && ts-node ./build.ts --prod"
   },
   "devDependencies": {
     "@types/fs-extra": "^9.0.13",
