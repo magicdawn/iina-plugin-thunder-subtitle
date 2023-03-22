@@ -1,5 +1,5 @@
-import { useMount, useRequest, useMemoizedFn } from 'ahooks'
-import { Input, Table, TableColumnsType, Button, Tooltip } from 'antd'
+import { useMemoizedFn, useMount, useRequest } from 'ahooks'
+import { Button, Input, Table, TableColumnsType, Tooltip } from 'antd'
 import cx from 'clsx'
 import { proxy, useSnapshot } from 'valtio'
 import styles from './App.module.less'
@@ -8,6 +8,7 @@ import { RPC } from './rpc'
 
 import dayjs from 'dayjs'
 import duration from 'dayjs/plugin/duration'
+import { useLayoutEffect, useRef } from 'react'
 dayjs.extend(duration)
 
 const state = proxy({
@@ -29,7 +30,7 @@ const columns: TableColumnsType<SubtitleItem> = [
     title: '序号',
     dataIndex: 'index',
     key: 'index',
-    render(text, record, index) {
+    render(col, row, index) {
       return index + 1
     },
   },
@@ -37,24 +38,24 @@ const columns: TableColumnsType<SubtitleItem> = [
     title: '时长',
     dataIndex: 'duration',
     key: 'duration',
-    render(text) {
-      const num = Number(text)
-      if (isNaN(num)) return text
-      if (!num) return text
+    render(col) {
+      const num = Number(col)
+      if (isNaN(num)) return col
+      if (!num) return col
       return dayjs.duration(num, 'millisecond').format('HH:mm:ss')
     },
   },
   {
     title: '操作',
     key: 'action',
-    render(text, record) {
+    render(col, row) {
       return (
         <>
           <Button
             type='primary'
             onClick={(e) => {
-              useSubtitle(record)
-              saveSubtitle(record)
+              useSubtitle(row)
+              saveSubtitle(row)
             }}
           >
             保存
@@ -67,17 +68,17 @@ const columns: TableColumnsType<SubtitleItem> = [
     title: '文件名',
     dataIndex: 'name',
     key: 'name',
-    render(text, record, index) {
+    render(col, row) {
       return (
-        <Tooltip overlayInnerStyle={{ width: 'max-content' }} title={<>cid: {record.cid}</>}>
+        <Tooltip overlayInnerStyle={{ width: 'max-content' }} title={<>cid: {row.cid}</>}>
           <a
             href='#'
             onClick={(e) => {
               e.preventDefault()
-              useSubtitle(record)
+              useSubtitle(row)
             }}
           >
-            {text}
+            {col}
           </a>
         </Tooltip>
       )
@@ -117,6 +118,12 @@ function App() {
 
   const { searchKeyword, searchResults } = useSnapshot(state)
 
+  const inputActionRef = useRef<(() => void) | null>(null)
+  useLayoutEffect(() => {
+    inputActionRef.current?.()
+    inputActionRef.current = null
+  }, [searchKeyword])
+
   return (
     <div className={cx('App', styles.page)}>
       <h1>
@@ -125,10 +132,13 @@ function App() {
           重新加载搜索词
         </Button>
       </h1>
+
       <Input.Search
         value={searchKeyword}
         loading={loading}
         onChange={(e) => {
+          const input = e.target
+          inputActionRef.current = createInputRecoverAction(input)
           state.searchKeyword = e.target.value
         }}
         onSearch={(value) => {
@@ -156,3 +166,11 @@ function App() {
 }
 
 export default App
+
+function createInputRecoverAction(input: HTMLInputElement) {
+  const { selectionStart, selectionEnd } = input
+  return () => {
+    input.selectionStart = selectionStart
+    input.selectionEnd = selectionEnd
+  }
+}
