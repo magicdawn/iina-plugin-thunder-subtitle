@@ -1,0 +1,21 @@
+{
+  "private": true,
+  "scripts": {
+    "typecheck": "tsc",
+    "dev": "ts-node ./build.ts -w",
+    "build": "pnpm typecheck && ts-node ./build.ts"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^9.0.13",
+    "@types/yargs": "^17.0.14",
+    "consola": "^2.15.3",
+    "esbuild": "^0.15.16",
+    "esbuild-node-builtin": "^0.0.2",
+    "esbuild-plugin-polyfill-node": "^0.1.4",
+    "fs-extra": "^11.1.0",
+    "iina-plugin-definition": "^0.0.7",
+    "rollup-plugin-node-polyfills": "^0.2.1",
+    "picocolors": "^1.0.0",
+    "yargs": "^17.6.2"
+  }
+}

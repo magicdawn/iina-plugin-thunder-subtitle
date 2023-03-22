@@ -1,0 +1,19 @@
+{
+  "name": "iina-plugin-thunder-subtitle",
+  "identifier": "iina-plugin-thunder-subtitle.magicdawn.fun",
+  "version": "0.0.1",
+  "ghVersion": 3,
+  "ghRepo": "magicdawn/iina-plugin-thunder-subtitle",
+  "description": "search subtitle from thunder",
+  "author": {
+    "name": "magicdawn",
+    "email": "magicdawn@qq.com",
+    "url": "https://iina.io"
+  },
+  "entry": "dist/index.js",
+  "globalEntry": "dist/global.js",
+  "permissions": ["show-osd", "network-request", "video-overlay", "file-system"],
+  "allowedDomains": ["iina.io", "*.iina.io", "*.xunlei.com", "*.geilijiasu.com"],
+  "preferencesPage": "pref.html",
+  "preferenceDefaults": {}
+}
