@@ -1,18 +1,19 @@
 import { useMemoizedFn, useMount, useRequest } from 'ahooks'
 import { Button, Input, Table, TableColumnsType, Tooltip } from 'antd'
 import cx from 'clsx'
-import { proxy, useSnapshot } from 'valtio'
-import styles from './App.module.less'
-import { SubtitleItem } from './define/result'
-import { RPC } from './rpc'
-
 import dayjs from 'dayjs'
 import duration from 'dayjs/plugin/duration'
 import { useLayoutEffect, useRef } from 'react'
+import { proxy, useSnapshot } from 'valtio'
+import styles from './App.module.less'
+import { SubtitleItem } from './define/result'
+import { bridge, RPC } from './rpc'
+
 dayjs.extend(duration)
 
 const state = proxy({
   playingFile: '',
+  playingFileDuration: '',
   searchKeyword: '',
   searchResults: [] as SubtitleItem[],
 })
@@ -28,8 +29,9 @@ async function doSearch() {
 const columns: TableColumnsType<SubtitleItem> = [
   {
     title: '序号',
-    dataIndex: 'index',
     key: 'index',
+    width: 65,
+    align: 'center',
     render(col, row, index) {
       return index + 1
     },
@@ -37,7 +39,8 @@ const columns: TableColumnsType<SubtitleItem> = [
   {
     title: '时长',
     dataIndex: 'duration',
-    key: 'duration',
+    align: 'center',
+    width: 120,
     render(col) {
       const num = Number(col)
       if (isNaN(num)) return col
@@ -46,32 +49,26 @@ const columns: TableColumnsType<SubtitleItem> = [
     },
   },
   {
-    title: '操作',
-    key: 'action',
+    title: '语言',
+    width: 90,
+    dataIndex: 'languages',
     render(col, row) {
-      return (
-        <>
-          <Button
-            type='primary'
-            onClick={(e) => {
-              useSubtitle(row)
-              saveSubtitle(row)
-            }}
-          >
-            保存
-          </Button>
-        </>
-      )
+      return <span>{(row.languages || []).join(',')}</span>
     },
+  },
+  {
+    title: '格式',
+    dataIndex: 'ext',
+    width: 70,
   },
   {
     title: '文件名',
     dataIndex: 'name',
-    key: 'name',
     render(col, row) {
       return (
         <Tooltip overlayInnerStyle={{ width: 'max-content' }} title={<>cid: {row.cid}</>}>
           <a
+            style={{ wordBreak: 'break-all' }}
             href='#'
             onClick={(e) => {
               e.preventDefault()
@@ -81,6 +78,27 @@ const columns: TableColumnsType<SubtitleItem> = [
             {col}
           </a>
         </Tooltip>
+      )
+    },
+  },
+  {
+    title: '操作',
+    key: 'action',
+    align: 'center',
+    width: 90,
+    render(col, row) {
+      return (
+        <>
+          <Button
+            type='dashed'
+            onClick={(e) => {
+              useSubtitle(row)
+              saveSubtitle(row)
+            }}
+          >
+            保存
+          </Button>
+        </>
       )
     },
   },
@@ -99,24 +117,33 @@ async function saveSubtitle(item: SubtitleItem) {
 }
 
 function App() {
+  const { playingFile, playingFileDuration, searchKeyword, searchResults } = useSnapshot(state)
+
   const { loading, runAsync } = useRequest(doSearch, {
     manual: true,
   })
 
-  const loadSearchKeyword = useMemoizedFn(async () => {
-    const file = await RPC.playingFile()
-    state.playingFile = file || ''
-    if (file) {
-      state.searchKeyword = file.split(' ')[0]
+  const loadPlaying = useMemoizedFn(async () => {
+    const status = (await RPC.playingFile()) || ''
+    console.log('status: %O', status)
+    state.playingFile = status.fileBase
+
+    if (status.duration) {
+      state.playingFileDuration = dayjs.duration(status.duration, 'seconds').format('HH:mm:ss')
+    }
+
+    if (state.playingFile) {
+      state.searchKeyword = state.playingFile.split(' ')[0]
       runAsync()
     }
   })
 
-  useMount(() => {
-    loadSearchKeyword()
+  useMount(async () => {
+    await loadPlaying()
+    bridge.onMessage('iina.file-loaded', () => {
+      loadPlaying()
+    })
   })
-
-  const { searchKeyword, searchResults } = useSnapshot(state)
 
   const inputActionRef = useRef<(() => void) | null>(null)
   useLayoutEffect(() => {
@@ -126,14 +153,18 @@ function App() {
 
   return (
     <div className={cx('App', styles.page)}>
-      <h1>
-        搜索
-        <Button onClick={loadSearchKeyword} type='primary'>
+      <p>当前视频时长: {playingFileDuration}</p>
+      <p>当前播放: {playingFile}</p>
+
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <span style={{ flex: 1 }}></span>
+        <Button onClick={loadPlaying} type='primary'>
           重新加载搜索词
         </Button>
-      </h1>
+      </div>
 
       <Input.Search
+        style={{ marginTop: 10 }}
         value={searchKeyword}
         loading={loading}
         onChange={(e) => {
@@ -146,21 +177,17 @@ function App() {
           runAsync()
         }}
         placeholder={'输入搜索词'}
+        enterButton='搜索'
       />
 
-      {/* <div>
-        {searchResults.map((item, index) => {
-          return (
-            <div key={item.cid} className={styles.row}>
-              <span className='index'>{index}</span>
-              <span className='duration'>{item.duration}</span>
-              <span className='name'>{item.name}</span>
-            </div>
-          )
-        })}
-      </div> */}
-
-      <Table columns={columns} dataSource={searchResults} pagination={false} />
+      <Table
+        style={{ marginTop: 10 }}
+        columns={columns}
+        dataSource={searchResults}
+        pagination={false}
+        rowKey='cid'
+        scroll={{ y: 'calc(100vh - 280px)' }}
+      />
     </div>
   )
 }

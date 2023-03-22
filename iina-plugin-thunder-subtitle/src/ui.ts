@@ -12,7 +12,10 @@ export function addMenu() {
   )
 }
 
-// showWin()
+// @ts-ignore
+if (process.env.NODE_ENV === 'development') {
+  showWin()
+}
 
 async function isDevServerRunning(): Promise<boolean> {
   const res = await zsh(`lsof -i :${DEV_SERVER_PORT}`)

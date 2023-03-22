@@ -1,6 +1,6 @@
-import { getPlayingIndex } from './helper'
 import { basename, dirname, extname, join } from 'path'
-import { format } from 'util'
+import { fileURLToPath } from 'url'
+import { getPlayingIndex } from './helper'
 
 export const NSP = 'iina-plugin-thunder-subtitle'
 
@@ -38,12 +38,35 @@ export const eventHandles: Record<string, (...args: any[]) => any> = {
   },
 
   playingFile() {
-    const filePath = iina.mpv.getString('path')
-    iina.console.log('current playing file path = ' + filePath)
-    if (!filePath) return ''
+    const status = iina.core.status
+    const {
+      paused,
+      idle,
+      position,
+      duration,
+      speed,
+      videoWidth,
+      videoHeight,
+      isNetworkResource,
+      url,
+    } = status
 
-    const file = basename(filePath, extname(filePath))
-    return file
+    // fileUrlToPath 不能, 这个 url 不标准, # 没有 escape
+    const filePath = url.slice('file://'.length)
+    const fileBase = basename(filePath, extname(filePath))
+
+    return {
+      paused,
+      idle,
+      position,
+      duration,
+      speed,
+      videoWidth,
+      videoHeight,
+      isNetworkResource,
+      url,
+      fileBase,
+    }
   },
 
   async search({ text }: { text: string }) {
@@ -82,6 +105,14 @@ export const eventHandles: Record<string, (...args: any[]) => any> = {
     await iina.http.download(url, subtitlePath)
   },
 }
+
+// broadcast message
+iina.event.on('iina.file-loaded', (fileUrl: string) => {
+  const filePath = fileURLToPath(fileUrl)
+  const file = basename(filePath, extname(filePath))
+  iina.standaloneWindow.postMessage('iina.file-loaded', { file })
+  console.log('iina.file-loaded: fileUrl=%s file=%s', fileUrl, file)
+})
 
 export function bindListeners() {
   for (const [event, handle] of Object.entries(eventHandles)) {
