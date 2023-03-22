@@ -14,8 +14,11 @@
     "esbuild-plugin-polyfill-node": "^0.1.4",
     "fs-extra": "^11.1.0",
     "iina-plugin-definition": "^0.0.7",
-    "rollup-plugin-node-polyfills": "^0.2.1",
     "picocolors": "^1.0.0",
+    "rollup-plugin-node-polyfills": "^0.2.1",
     "yargs": "^17.6.2"
+  },
+  "dependencies": {
+    "symlink-dir": "^5.1.1"
   }
 }

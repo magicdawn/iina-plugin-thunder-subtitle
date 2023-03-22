@@ -9,7 +9,7 @@ import { join } from 'path'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 import Info from './Info.json'
-import { polyfillNode } from 'esbuild-plugin-polyfill-node'
+import symlinkDir from 'symlink-dir'
 
 const argv = yargs(hideBin(process.argv))
   .options({
@@ -34,11 +34,11 @@ const argv = yargs(hideBin(process.argv))
 main().catch(console.error)
 
 async function main() {
-  processSymlinks()
+  await processSymlinks()
   await build()
 }
 
-function processSymlinks() {
+async function processSymlinks() {
   const IINA_PLUGINS_DIR = join(
     homedir(),
     'Library/Application Support/com.colliderli.iina/plugins'
@@ -56,6 +56,7 @@ function processSymlinks() {
       const stat = fse.lstatSync(fullname) // do not follow symlinks
       if (!stat.isSymbolicLink()) return
 
+      // 多个 symlink 指向当前文件夹
       if (fse.realpathSync(fullname) === __dirname && name !== pluginSubdir) {
         consola.info('symlink prune legacy symlink: %s', fullname)
         fse.removeSync(fullname)
@@ -70,7 +71,8 @@ function processSymlinks() {
     fse.removeSync(symlinkFrom)
     consola.success('symlink unlink success %s', symlinkFrom)
   } else {
-    fse.ensureSymlinkSync(symlinkTo, symlinkFrom)
+    await symlinkDir(symlinkTo, symlinkFrom, { overwrite: true })
+    // fse.symlinkSync(symlinkTo, symlinkFrom) // Error: EEXIST: file already exists, symlink
     consola.success('symlink success %s -> %s', symlinkFrom, symlinkTo)
   }
 }
@@ -92,12 +94,7 @@ async function build() {
     //   path: 'rollup-plugin-node-polyfills/polyfills/path.js',
     //   process: 'rollup-plugin-node-polyfills/polyfills/process-es6.js',
     // },
-    plugins: [
-      // nodeBuiltin(),
-      polyfillNode({
-        // Options (optional)
-      }),
-    ],
+    plugins: [nodeBuiltin()],
     mainFields: ['module', 'browser', 'main'],
     define: {
       'process.env.NODE_ENV': JSON.stringify(

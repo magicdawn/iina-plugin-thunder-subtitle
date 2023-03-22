@@ -9,7 +9,7 @@ function useScript(): Plugin {
     transformIndexHtml: {
       enforce: 'post',
       transform(html) {
-        console.log(html)
+        // console.log(html)
         return html.replace(/<script type="module" crossorigin src=/g, '<script defer src=')
       },
     },
