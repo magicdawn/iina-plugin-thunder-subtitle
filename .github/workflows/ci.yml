@@ -27,10 +27,20 @@ jobs:
       - run: pnpm install
 
       # build
-      #
+      - run: pnpm build
 
-      - name: Deploy gh-pages
+      # plugin-dist
+      - name: prepare publish
+        run: |
+          mkdir to-dist-repo
+          cp -R ./src-plugin/dist ./to-dist-repo
+          cp ./src-plugin/Info.json ./to-dist-repo
+          cp ./src-plugin/Info.json ./to-dist-repo
+
+      - name: Deploy(commit to -dist repo)
         uses: peaceiris/actions-gh-pages@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs
+          deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
+          external_repository: magicdawn/iina-plugin-thunder-subtitle-dist
+          publish_branch: main # default: gh-pages
+          publish_dir: ./to-dist-repo
