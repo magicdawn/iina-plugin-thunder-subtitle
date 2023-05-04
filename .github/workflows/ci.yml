@@ -16,6 +16,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: apt install
+        uses: awalsh128/cache-apt-pkgs-action@v1
+        with:
+          packages: jq
+
       - uses: pnpm/action-setup@v2
         with: { version: 8 }
 
@@ -36,6 +41,7 @@ jobs:
           cp -R ./src-plugin/dist ./to-dist-repo
           cp ./src-plugin/Info.json ./to-dist-repo
           cp ./README.md ./to-dist-repo
+          cat ./package.json | jq 'del(.devDependencies)' > ./to-dist-repo/package.json
 
       # cp ./src-plugin/package.json ./to-dist-repo
       - name: Deploy(commit to -dist repo)
