@@ -8,5 +8,5 @@
 
 ## repo
 
-- src: https://github.com/magicdawn/iina-plugin-thunder-subtitle-dist
+- src: https://github.com/magicdawn/iina-plugin-thunder-subtitle/
 - build: https://github.com/magicdawn/iina-plugin-thunder-subtitle-dist/
