@@ -41,9 +41,7 @@ jobs:
       - name: Deploy(commit to -dist repo)
         uses: peaceiris/actions-gh-pages@v3
         with:
-          # deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
-          # personal_token: ${{ secrets.PERSONAL_TOKEN }}
-          personal_token: ${{ secrets.GITHUB_TOKEN }}
+          personal_token: ${{ secrets.PERSONAL_TOKEN }}
           external_repository: magicdawn/iina-plugin-thunder-subtitle-dist
           publish_branch: main # default: gh-pages
           publish_dir: ./to-dist-repo
