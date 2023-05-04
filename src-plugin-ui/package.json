@@ -1,14 +1,16 @@
 {
-  "name": "iina-plugin-thunder-subtitle-ui",
+  "name": "plugin-ui",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "concurrently -k npm:dev:less vite",
     "dev:less": "tlm src -w",
-    "build": "vite build",
+    "build:vite": "vite build",
+    "build:less": "tlm src",
+    "build": "pnpm build:less && pnpm typecheck && pnpm build:less",
     "preview": "vite preview",
-    "type": "tsc --noEmit"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "ahooks": "^3.7.5",

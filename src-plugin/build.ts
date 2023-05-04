@@ -5,11 +5,11 @@ import esbuild from 'esbuild'
 import { nodeBuiltin } from 'esbuild-node-builtin'
 import fse from 'fs-extra'
 import { homedir } from 'os'
-import { join } from 'path'
+import path, { join } from 'path'
+import symlinkDir from 'symlink-dir'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 import Info from './Info.json'
-import symlinkDir from 'symlink-dir'
 
 const argv = yargs(hideBin(process.argv))
   .options({
@@ -57,7 +57,8 @@ async function processSymlinks() {
       if (!stat.isSymbolicLink()) return
 
       // 多个 symlink 指向当前文件夹
-      if (fse.realpathSync(fullname) === __dirname && name !== pluginSubdir) {
+      const symlinkTarget = path.resolve(IINA_PLUGINS_DIR, fse.readlinkSync(fullname))
+      if (symlinkTarget === __dirname && name !== pluginSubdir) {
         consola.info('symlink prune legacy symlink: %s', fullname)
         fse.removeSync(fullname)
       }

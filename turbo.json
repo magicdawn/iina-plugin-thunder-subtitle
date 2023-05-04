@@ -1,0 +1,11 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "pipeline": {
+    "plugin#build": {
+      "outputs": ["dist/*.js"]
+    },
+    "plugin-ui#build": {
+      "outputs": ["../src-plugin/dist/ui/**"]
+    }
+  }
+}

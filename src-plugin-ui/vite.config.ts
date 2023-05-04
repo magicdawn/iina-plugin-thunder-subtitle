@@ -1,6 +1,6 @@
-import { defineConfig, Plugin } from 'vite'
 import react from '@vitejs/plugin-react-swc'
 import path from 'path'
+import { defineConfig, Plugin } from 'vite'
 
 function useScript(): Plugin {
   return {
@@ -36,6 +36,6 @@ export default defineConfig({
 
   build: {
     emptyOutDir: true,
-    outDir: path.join(__dirname, '../iina-plugin-thunder-subtitle/dist/ui/'),
+    outDir: path.join(__dirname, '../src-plugin/dist/ui/'),
   },
 })

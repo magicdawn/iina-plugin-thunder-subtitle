@@ -1,2 +1,2 @@
-workspaces:
-  - iina-plugin-thunder-subtitle*
+packages:
+  - src-*

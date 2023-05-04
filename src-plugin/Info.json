@@ -1,6 +1,6 @@
 {
   "name": "iina-plugin-thunder-subtitle",
-  "identifier": "iina-plugin-thunder-subtitle.magicdawn.fun",
+  "identifier": "fun.magicdawn.iina-plugin-thunder-subtitle",
   "version": "0.0.1",
   "ghVersion": 3,
   "ghRepo": "magicdawn/iina-plugin-thunder-subtitle",

@@ -1,4 +1,5 @@
 {
+  "name": "plugin",
   "private": true,
   "scripts": {
     "typecheck": "tsc",

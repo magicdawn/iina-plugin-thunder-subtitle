@@ -1,7 +1,9 @@
 {
   "name": "iina-plugin-thunder-subtitle",
   "private": true,
-  "scripts": {},
+  "scripts": {
+    "build": "turbo build"
+  },
   "devDependencies": {
     "@magicdawn/prettier-config": "^0.0.2",
     "@types/node": "^18.15.5",
@@ -13,6 +15,7 @@
     "lint-staged": "^13.2.0",
     "prettier": "^2.8.6",
     "ts-node": "^10.9.1",
+    "turbo": "^1.9.3",
     "typescript": "^5.0.2"
   },
   "license": "MIT",
