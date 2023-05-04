@@ -35,9 +35,9 @@ jobs:
           mkdir to-dist-repo
           cp -R ./src-plugin/dist ./to-dist-repo
           cp ./src-plugin/Info.json ./to-dist-repo
-          cp ./src-plugin/package.json ./to-dist-repo
           cp ./README.md ./to-dist-repo
 
+      # cp ./src-plugin/package.json ./to-dist-repo
       - name: Deploy(commit to -dist repo)
         uses: peaceiris/actions-gh-pages@v3
         with:
@@ -45,3 +45,4 @@ jobs:
           external_repository: magicdawn/iina-plugin-thunder-subtitle-dist
           publish_branch: main # default: gh-pages
           publish_dir: ./to-dist-repo
+          force_orphan: true
