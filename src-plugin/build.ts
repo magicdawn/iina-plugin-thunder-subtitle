@@ -39,6 +39,8 @@ async function main() {
 }
 
 async function processSymlinks() {
+  if (process.env.CI) return
+
   const IINA_PLUGINS_DIR = join(
     homedir(),
     'Library/Application Support/com.colliderli.iina/plugins'
