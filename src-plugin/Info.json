@@ -13,7 +13,7 @@
   "entry": "dist/index.js",
   "globalEntry": "dist/global.js",
   "permissions": ["show-osd", "network-request", "video-overlay", "file-system"],
-  "allowedDomains": ["iina.io", "*.iina.io", "*.xunlei.com", "*.geilijiasu.com"],
+  "allowedDomains": ["*.xunlei.com", "*.geilijiasu.com"],
   "preferencesPage": "",
   "preferenceDefaults": {}
 }

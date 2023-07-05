@@ -3,7 +3,6 @@ import { basename, dirname, extname, join } from 'path'
 import { createIINATrpcServer } from 'trpc-iina/server'
 import { fileURLToPath } from 'url'
 import { z } from 'zod'
-import { getPlayingIndex } from './helper'
 
 export const NSP = 'iina-plugin-thunder-subtitle'
 
@@ -29,29 +28,17 @@ const appRouter = t.router({
       iina.core.pause()
     }
   }),
-
   seek: t.procedure.input(z.number()).mutation(({ input: sec }) => {
     iina.core.seek(sec, true)
   }),
-
   playNext: t.procedure.mutation(() => {
     iina.playlist.playNext()
   }),
-
   playPrevious: t.procedure.mutation(() => {
     iina.playlist.playPrevious()
   }),
 
-  playlistStatus: t.procedure.query(() => {
-    return {
-      count: iina.playlist.count(),
-      playingIndex: getPlayingIndex(),
-      playlistDir: dirname(iina.mpv.getString('path')),
-    }
-  }),
-
   getPlayingFile: t.procedure.query(async () => {
-    const status = iina.core.status
     const {
       paused,
       idle,
@@ -61,13 +48,14 @@ const appRouter = t.router({
       videoWidth,
       videoHeight,
       isNetworkResource,
-      url,
-    } = status
+      url = '',
+    } = iina.core.status
 
-    // fileUrlToPath 不能, 这个 url 不标准, # 没有 escape
-    const filePath = url.slice('file://'.length)
+    // 不能使用 fileUrlToPath, 这个 url 不标准, # 没有 escape
+    const filePath = url.startsWith('file://') ? url.slice('file://'.length) : url
     const fileBase = basename(filePath, extname(filePath))
 
+    // 直接 spread {...status} 没有输出, 可能 enumerable: false
     return {
       paused,
       idle,
@@ -82,17 +70,28 @@ const appRouter = t.router({
     }
   }),
 
-  search: t.procedure.input(z.string()).query(async ({ input: text }) => {
-    const response = await iina.http.get(
-      `https://api-shoulei-ssl.xunlei.com/oracle/subtitle?duration=0&gcid=&name=${text}`,
-      // @ts-ignore
-      {
-        headers: {
-          'user-agent': 'xunlei',
+  search: t.procedure.input(z.string()).query(async ({ input: searchText }) => {
+    console.log('in search(%s)', searchText)
+
+    let json: any = {}
+    try {
+      const response = await iina.http.get(`https://api-shoulei-ssl.xunlei.com/oracle/subtitle`, {
+        // ?duration=0&gcid=&name=${searchText}
+        params: {
+          duration: '0',
+          gcid: '',
+          name: searchText,
         },
-      }
-    )
-    return response.data
+        headers: { 'user-agent': 'Thunder' },
+        data: undefined,
+      })
+      json = response.data
+    } catch (e: any) {
+      console.error(e.stack || e)
+    }
+
+    // console.log(json)
+    return json
   }),
 
   useSubtitle: t.procedure
