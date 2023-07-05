@@ -1,15 +1,16 @@
+import dayjs from 'dayjs'
+import duration from 'dayjs/plugin/duration'
+dayjs.extend(duration)
+
 import { useMemoizedFn, useMount, useRequest } from 'ahooks'
 import { Button, Input, Table, TableColumnsType, Tooltip } from 'antd'
 import cx from 'clsx'
-import dayjs from 'dayjs'
-import duration from 'dayjs/plugin/duration'
 import { useLayoutEffect, useRef } from 'react'
 import { proxy, useSnapshot } from 'valtio'
 import styles from './App.module.less'
+import { bridge } from './constants'
 import { SubtitleItem } from './define/result'
-import { bridge, RPC } from './rpc'
-
-dayjs.extend(duration)
+import { trpc } from './trpc-client'
 
 const state = proxy({
   playingFile: '',
@@ -19,9 +20,8 @@ const state = proxy({
 })
 
 async function doSearch() {
-  const result = await RPC.search(state.searchKeyword)
+  const result = await trpc.search.query(state.searchKeyword)
   console.log(result)
-
   const arr = (result?.data || []) as SubtitleItem[]
   state.searchResults = arr
 }
@@ -108,12 +108,12 @@ async function useSubtitle(item: SubtitleItem) {
   console.log({ ...item })
   const index = state.searchResults.findIndex((x) => x.cid === item.cid)
   const title = `${index + 1}-${item.name}`
-  await RPC.useSubtitle(item.url, title)
+  await trpc.useSubtitle.mutate({ url: item.url, title })
 }
 
 async function saveSubtitle(item: SubtitleItem) {
   console.log({ ...item })
-  await RPC.saveSubtitle(item.url, item.cid)
+  await trpc.saveSubtitle.mutate({ url: item.url, cid: item.cid })
 }
 
 function App() {
@@ -124,7 +124,7 @@ function App() {
   })
 
   const loadPlaying = useMemoizedFn(async () => {
-    const status = (await RPC.playingFile()) || ''
+    const status = (await trpc.getPlayingFile.query()) || ''
     console.log('status: %O', status)
     state.playingFile = status.fileBase
 

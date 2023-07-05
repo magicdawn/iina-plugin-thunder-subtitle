@@ -1,5 +1,5 @@
 import { zsh } from './helper'
-import { bindListeners } from './rpc-server'
+import { bindTrpcEvents } from './trpc-server'
 
 const DEV_SERVER_PORT = '5173'
 const win = iina.standaloneWindow
@@ -58,5 +58,5 @@ async function showWin() {
   win.setProperty({ title: '从迅雷影音查找字幕' })
 
   // 实测每次都需要绑定
-  bindListeners()
+  bindTrpcEvents()
 }
